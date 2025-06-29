@@ -1,9 +1,18 @@
 from flask import Flask, request, jsonify
 import sqlite3
 import re
+from messages_view import get_messages  # <-- importing the function
 
 app = Flask(__name__)
 DATABASE = 'sms_messages.db'
+
+
+
+
+
+@app.route('/messages')
+def show_messages():
+    return get_messages()
 
 # Initialize DB (create table if not exists)
 def init_db():
@@ -63,4 +72,4 @@ def receive_sms():
 
 if __name__ == '__main__':
     init_db()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run()
