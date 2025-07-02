@@ -2,11 +2,19 @@ from flask import Flask, request, jsonify
 import re
 from supabase import create_client, Client
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+import sys
 
 # --- CONFIG ---
-SUPABASE_URL = "https://oodqaphoejozowarcnxy.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZHFhcGhvZWpvem93YXJjbnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExODUzMDEsImV4cCI6MjA2Njc2MTMwMX0.vorNchBsWI_bjWWIFjgaSeaIYHXlUVQZUQYk48sRHGc"  
-TABLE_NAME = "Messages"  # Make sure this table exists in Supabase
+load_dotenv()
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+TABLE_NAME = "Messages"  
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("Error: SUPABASE_URL and SUPABASE_KEY must be set in the environment.")
+    sys.exit(1)
 
 # --- INIT ---
 app = Flask(__name__)
