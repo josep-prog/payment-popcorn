@@ -1,75 +1,71 @@
 from flask import Flask, request, jsonify
-import sqlite3
 import re
-from messages_view import get_messages  # <-- importing the function
+from supabase import create_client, Client
+from datetime import datetime
 
+# --- CONFIG ---
+SUPABASE_URL = "https://oodqaphoejozowarcnxy.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZHFhcGhvZWpvem93YXJjbnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExODUzMDEsImV4cCI6MjA2Njc2MTMwMX0.vorNchBsWI_bjWWIFjgaSeaIYHXlUVQZUQYk48sRHGc"  
+TABLE_NAME = "Messages"  # Make sure this table exists in Supabase
+
+# --- INIT ---
 app = Flask(__name__)
-DATABASE = 'sms_messages.db'
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# --- REGEX PATTERNS ---
+NAME_PATTERN = r"Name[:\s]+([A-Za-z ]+)"
+AMOUNT_PATTERN = r"Amount[:\s]+([\d,.]+)"
+ACCOUNT_PATTERN = r"Account(?: No\.| Number)[:\s]+(\d+)"
 
-
-
-
-@app.route('/messages')
-def show_messages():
-    return get_messages()
-
-# Initialize DB (create table if not exists)
-def init_db():
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            raw_text TEXT,
-            amount TEXT,
-            sender_name TEXT,
-            recipient_name TEXT,
-            recipient_account TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-# Extract fields from SMS text
 def extract_fields(text):
-    amount = re.search(r'(\d{1,3}(?:,\d{3})*|\d+)\s*RWF', text)
-    recipient_name = re.search(r'to\s+([A-Za-z\s]+)\s*(\(\d+\)|\d+)?', text)
-    recipient_account = re.search(r'\((\d{9,})\)|\b(\d{6,})\b', text)
-    sender = re.search(r'from your mobile money account\s+(\d+)', text)
+    # TxId
+    txid = ''
+    txid_match = re.search(r'TxId[:\s]*([\d]+)', text)
+    if not txid_match:
+        txid_match = re.search(r'\*161\*TxId:([\d]+)\*R\*', text)
+    if txid_match:
+        txid = txid_match.group(1)
+
+    # Amount
+    amount = ''
+    amount_match = re.search(r'(\d{1,3}(?:,\d{3})*|\d+)\s*RWF', text)
+    if amount_match:
+        amount = amount_match.group(0)
+
+    # Sender name
+    sender_name = ''
+    sender_match = re.search(r'from ([A-Za-z ]+) \(', text)
+    if sender_match:
+        sender_name = sender_match.group(1).strip()
+
+    # Timestamp
+    timestamp = ''
+    timestamp_match = re.search(r'at (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})', text)
+    if timestamp_match:
+        timestamp = timestamp_match.group(1)
 
     return {
         'raw_text': text,
-        'amount': amount.group(0) if amount else '',
-        'recipient_name': recipient_name.group(1).strip() if recipient_name else '',
-        'recipient_account': recipient_account.group(1) or recipient_account.group(2) if recipient_account else '',
-        'sender_name': sender.group(1) if sender else ''
+        'txid': txid or '',
+        'amount': amount or '',
+        'sender_name': sender_name or '',
+        'timestamp': timestamp or None
     }
 
+# --- ROUTES ---
 @app.route('/receive-sms', methods=['POST'])
 def receive_sms():
     data = request.get_json()
     message = data.get('message', '')
 
+    # Only process messages that match the specific format
+    pattern = r"^\*161\*TxId:\d+\*R\*You have received \d+ RWF from [A-Za-z ]+ \([*\d]+\) on your mobile money account at \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\."
+    if not re.match(pattern, message):
+        return jsonify({"status": "ignored", "reason": "Message format not supported."})
+
     fields = extract_fields(message)
-
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO messages (raw_text, amount, sender_name, recipient_name, recipient_account)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (
-        fields['raw_text'],
-        fields['amount'],
-        fields['sender_name'],
-        fields['recipient_name'],
-        fields['recipient_account']
-    ))
-    conn.commit()
-    conn.close()
-
+    supabase.table(TABLE_NAME).insert(fields).execute()
     return jsonify({"status": "saved", "data": fields})
 
 if __name__ == '__main__':
-    init_db()
-    app.run()
+    app.run(debug=True, port=5000) 
