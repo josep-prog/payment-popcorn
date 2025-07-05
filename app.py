@@ -1,12 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import re
 from supabase import create_client, Client
 from datetime import datetime
 from dotenv import load_dotenv
 import os
 import sys
+from payment_verification import verify_payment
 
-# --- CONFIG ---
+#  CONFIG for supabase keys
 load_dotenv()
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
@@ -74,6 +75,18 @@ def receive_sms():
     fields = extract_fields(message)
     supabase.table(TABLE_NAME).insert(fields).execute()
     return jsonify({"status": "saved", "data": fields})
+
+@app.route('/verify-payment-web', methods=['GET', 'POST'])
+def verify_payment_web():
+    result_message = None
+    result_status = None
+    if request.method == 'POST':
+        txid = request.form.get('txid')
+        if txid:
+            result = verify_payment(txid)
+            result_message = result['message']
+            result_status = result['status']
+    return render_template('verify_payment.html', result_message=result_message, result_status=result_status)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000) 
