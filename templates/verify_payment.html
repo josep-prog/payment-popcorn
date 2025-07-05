@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Payment</title>
+    <style>
+        body {
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            max-width: 400px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 36px 32px 32px 32px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 {
+            margin-bottom: 24px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: 1px;
+        }
+        label {
+            align-self: flex-start;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: #444;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 24px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+        input[type="text"]:focus {
+            border: 1.5px solid #007bff;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #007bff 0%, #00c6ff 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.08);
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #0056b3 0%, #007bff 100%);
+        }
+        .result-message {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+        .approved {
+            background: #e6ffed;
+            color: #1a7f37;
+            border: 1.5px solid #1a7f37;
+        }
+        .not_approved {
+            background: #fff4e6;
+            color: #b85c00;
+            border: 1.5px solid #b85c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Verify Payment</h2>
+        <form method="post" action="{{ url_for('verify_payment_web') }}">
+            <label for="txid">Transaction ID (TxID):</label>
+            <input type="text" id="txid" name="txid" required>
+            <button type="submit">Verify</button>
+        </form>
+        {% if result_message %}
+            <div class="result-message {{ result_status }}">
+                {{ result_message }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
