@@ -81,11 +81,17 @@ def verify_payment_web():
     result_message = None
     result_status = None
     if request.method == 'POST':
+        email = request.form.get('email')
+        name = request.form.get('name')
         txid = request.form.get('txid')
-        if txid:
-            result = verify_payment(txid)
+        if email and name and txid:
+            from payment_verification import verify_and_update_appointment
+            result = verify_and_update_appointment(txid, email, name)
             result_message = result['message']
             result_status = result['status']
+        else:
+            result_message = "All fields are required."
+            result_status = "not_approved"
     return render_template('verify_payment.html', result_message=result_message, result_status=result_status)
 
 if __name__ == '__main__':

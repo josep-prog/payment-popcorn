@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Verify Payment</title>
+    <!-- Responsive viewport for mobile scaling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
@@ -12,6 +14,7 @@
         }
         .container {
             max-width: 400px;
+            width: 90vw;
             margin: 60px auto;
             background: #fff;
             padding: 36px 32px 32px 32px;
@@ -42,6 +45,7 @@
             border-radius: 6px;
             font-size: 1rem;
             transition: border 0.2s;
+            box-sizing: border-box;
         }
         input[type="text"]:focus {
             border: 1.5px solid #007bff;
@@ -81,12 +85,42 @@
             color: #b85c00;
             border: 1.5px solid #b85c00;
         }
+        /* --- MEDIA QUERIES FOR RESPONSIVENESS --- */
+        @media (max-width: 600px) {
+            .container {
+                max-width: 98vw;
+                padding: 20px 8px 20px 8px;
+                margin: 20px auto;
+                border-radius: 10px;
+            }
+            h2 {
+                font-size: 1.3rem;
+            }
+            label, input[type="text"], button, .result-message {
+                font-size: 1rem;
+            }
+        }
+        @media (max-width: 400px) {
+            .container {
+                padding: 10px 2px 10px 2px;
+            }
+            h2 {
+                font-size: 1.1rem;
+            }
+            label, input[type="text"], button, .result-message {
+                font-size: 0.95rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Verify Payment</h2>
         <form method="post" action="{{ url_for('verify_payment_web') }}">
+            <label for="email">Email used for booking:</label>
+            <input type="text" id="email" name="email" required>
+            <label for="name">Patient First Name:</label>
+            <input type="text" id="name" name="name" required>
             <label for="txid">Transaction ID (TxID):</label>
             <input type="text" id="txid" name="txid" required>
             <button type="submit">Verify</button>
