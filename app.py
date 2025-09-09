@@ -124,6 +124,11 @@ def verify_payment_api():
     }), 200
 
 
+@app.route('/', methods=['GET', 'HEAD'])
+def health():
+    return 'OK', 200
+
+
 @app.route('/verify-payment-web', methods=['GET', 'POST'])
 def verify_payment_web():
     result_message = None

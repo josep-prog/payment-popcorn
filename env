@@ -1,0 +1,10 @@
+# Supabase service credentials (Backend-only, keep secret)
+SUPABASE_URL=https://qsbjmzmktsurdtaomwcz.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzYmptem1rdHN1cmR0YW9td2N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczMTk0MjAsImV4cCI6MjA3Mjg5NTQyMH0.TdFai_LGPbZWTlopITKVGUVcqcQCK1vRhpv-j8oc5MA
+
+# Flask/runtime
+FLASK_ENV=production
+PORT=5000
+
+# Optional: protect /receive-sms with a shared secret (recommended)
+INBOUND_SMS_SECRET="k@#+ymej@AQ@3"
