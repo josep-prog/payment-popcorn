@@ -117,17 +117,22 @@
     <div class="container">
         <h2>Verify Payment</h2>
         <form method="post" action="{{ url_for('verify_payment_web') }}">
-            <label for="email">Email used for booking:</label>
-            <input type="text" id="email" name="email" required>
-            <label for="name">Patient First Name:</label>
+            <label for="name">Account Holder Name:</label>
             <input type="text" id="name" name="name" required>
-            <label for="txid">Transaction ID (TxID):</label>
+            <label for="phone">Phone Number:</label>
+            <input type="text" id="phone" name="phone" required>
+            <label for="txid">Transaction ID (TxId):</label>
             <input type="text" id="txid" name="txid" required>
             <button type="submit">Verify</button>
         </form>
         {% if result_message %}
             <div class="result-message {{ result_status }}">
                 {{ result_message }}
+            </div>
+        {% endif %}
+        {% if result_status == 'approved' and amount is not none %}
+            <div class="result-message approved" style="margin-top:12px;">
+                Amount received: {{ '{:,}'.format(amount) }} RWF
             </div>
         {% endif %}
     </div>
